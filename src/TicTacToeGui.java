@@ -1,7 +1,18 @@
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
-public class TicTacToeGui extends JFrame {
+public class TicTacToeGui extends JFrame implements ActionListener {
+    //xScore - holds the score value for the x player
+    //oScore - holds the score value for the o player
+    //moveCounter - counts the number of moves (used to determine if there is a draw)
+    private int xScore, oScore, moveCounter;
+
+
+    // isPlayerOne - Flag to indicate if the current player is player x or not
+    private boolean isPlayerOne;
+
 
     private JLabel turnLabel, scoreLabel;
     private JButton[][] board;
@@ -17,6 +28,9 @@ public class TicTacToeGui extends JFrame {
 
         //Init vars
         board = new JButton[3][3];
+
+        //Player x starts first
+        isPlayerOne = true;
 
         addGuiComponent();
     }
@@ -70,18 +84,92 @@ public class TicTacToeGui extends JFrame {
                 button.setFont(new Font("Dialog", Font.PLAIN, 180));
                 button.setPreferredSize(CommonConstants.BUTTON_SIZE);
                 button.setBackground(CommonConstants.BACKGROUND_COLOR);
+                button.addActionListener(this);
                 button.setBorder(BorderFactory.createLineBorder(CommonConstants.BOARD_COLOR));
 
                 //Add button to board
                 board[i][j] = button;
                 boardPanel.add(board[i][j]);
             }
-
         }
+
+        //Reset button
+        JButton resetButton = new JButton("Reset");
+        resetButton.setFont(new Font("Dialog", Font.PLAIN, 24));
+        resetButton.addActionListener(this);
+        resetButton.setBackground(CommonConstants.BOARD_COLOR);
+        resetButton.setBounds(
+                (CommonConstants.FRAME_SIZE.width - resetButton.getPreferredSize().width)/2,
+                CommonConstants.FRAME_SIZE.height - 100,
+                resetButton.getPreferredSize().width,
+                resetButton.getPreferredSize().height
+        );
 
         getContentPane().add(turnLabel);
         getContentPane().add(barLabel);
         getContentPane().add(scoreLabel);
         getContentPane().add(boardPanel);
+        getContentPane().add(resetButton);
+    }
+
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        String command = e.getActionCommand();
+        if(command.equals("Reset")) {
+            //Reset the game
+            resetGame();
+        } else {
+            //Player move
+            JButton button = (JButton) e.getSource();
+            if (button.getText().equals("")) {
+                moveCounter++;
+
+                //Mark the button with x/o only if it hasn't been selected yet
+                if (isPlayerOne) {
+                    //Player one (x player)
+                    button.setText(CommonConstants.X_LABEL);
+                    button.setForeground(CommonConstants.X_COLOR);
+
+                    //Update turn label
+                    turnLabel.setText(CommonConstants.O_LABEL);
+                    turnLabel.setBackground(CommonConstants.O_COLOR);
+
+                    //Update turn
+                    isPlayerOne = false;
+                } else {
+                    //Player two (o player)
+                    button.setText(CommonConstants.O_LABEL);
+                    button.setForeground(CommonConstants.O_COLOR);
+
+                    //Update turn label
+                    turnLabel.setText(CommonConstants.X_LABEL);
+                    turnLabel.setBackground(CommonConstants.X_COLOR);
+
+                    //Update turn
+                    isPlayerOne = true;
+                }
+
+                //Check win condition
+            }
+
+            repaint();
+            revalidate();
+        }
+    }
+    private void resetGame() {
+        //Reset player back to x_player
+        isPlayerOne = true;
+        turnLabel.setText(CommonConstants.X_LABEL);
+        turnLabel.setBackground(CommonConstants.X_COLOR);
+
+        //Reset score
+        scoreLabel.setText(CommonConstants.SCORE_LABEL);
+
+        //Reset board
+        for(int i = 0; i < board.length; i++) {
+            for(int j = 0; j < board[i].length; j++) {
+                board[i][j].setText("");
+            }
+        }
     }
 }
